@@ -41,13 +41,23 @@ def swagger_ui_view(request):
       </body>
     </html>
     """, content_type="text/html")
+    
+from django.http import HttpResponse
 
-# Force use of CDN-based Swagger UI
-swagger_ui_renderer = schema_view.with_ui('swagger', cache_timeout=0)
-swagger_ui_renderer.renderer_classes = [SwaggerUIRenderer, OpenAPIRenderer]
-
-redoc_ui_renderer = schema_view.with_ui('redoc', cache_timeout=0)
-redoc_ui_renderer.renderer_classes = [ReDocRenderer, OpenAPIRenderer]
+def redoc_ui_view(request):
+    return HttpResponse("""
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>ReDoc</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700">
+        <script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"></script>
+      </head>
+      <body>
+        <redoc spec-url='/openapi.json'></redoc>
+      </body>
+    </html>
+    """, content_type="text/html")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -63,6 +73,6 @@ urlpatterns = [
 
     # OpenAPI Docs
     path("swagger/", swagger_ui_view, name="swagger-ui"),
-    path("redoc/", redoc_ui_renderer, name="schema-redoc"),
+    path("redoc/", redoc_ui_view, name="custom-redoc-ui"),
     path("openapi.json", schema_view.without_ui(cache_timeout=0), name="schema-json"),
 ]

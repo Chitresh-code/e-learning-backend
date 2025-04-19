@@ -110,9 +110,18 @@ AUTHENTICATION_BACKENDS = (
 )
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_LOGIN_METHODS = {"email"}
-ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_REQUIRED = True
+
+ACCOUNT_SIGNUP_FIELDS = {
+    "email": {"required": True},
+    "password1": {"required": True},
+    "password2": {"required": True}
+}
+
 ACCOUNT_EMAIL_VERIFICATION = "none"
+
 SOCIALACCOUNT_AUTO_SIGNUP = True
 REST_USE_JWT = True
 DJ_REST_AUTH_TOKEN_MODEL = None

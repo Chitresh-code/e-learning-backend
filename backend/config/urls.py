@@ -68,6 +68,8 @@ def redoc_ui_view(request):
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("student/", include("student.urls")),
+    path('generate/', include("learningplan.urls")),
+    path("ai/", include("ai.urls")),
 
     # JWT Token Refresh
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),

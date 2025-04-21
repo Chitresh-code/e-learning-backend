@@ -4,7 +4,8 @@ from .views import (
     StudentSubjectListCreateView, StudentSubjectDetailView,
     SubjectListView, QuizListCreateView,
     LearningGoalListCreateView, LearningGoalDetailView,
-    ResourceListView, StudentResourceLogListCreateView
+    ResourceListView, StudentResourceLogListCreateView,
+    StudentProfileView, AnswerQuizView
 )
 
 urlpatterns = [
@@ -24,6 +25,7 @@ urlpatterns = [
 
     # Quizzes
     path("quizzes/", QuizListCreateView.as_view(), name="quizzes"),
+    path("quizzes/<int:pk>/answer/", AnswerQuizView.as_view(), name="quiz-answer"),
 
     # Learning Goals
     path("goals/", LearningGoalListCreateView.as_view(), name="learning-goals"),
@@ -32,4 +34,7 @@ urlpatterns = [
     # Resource catalog and student logs
     path("resources/", ResourceListView.as_view(), name="resources"),
     path("resource-log/", StudentResourceLogListCreateView.as_view(), name="resource-log"),
+    
+    # Student profile
+    path("profile/", StudentProfileView.as_view(), name="student-profile"),
 ]

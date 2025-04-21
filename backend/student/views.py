@@ -14,7 +14,7 @@ from .serializers import (
     StudentInfoSerializer, StudentSubjectSerializer,
     SubjectSerializer, QuizSerializer, QuestionSerializer,
     LearningGoalSerializer, ResourceSerializer,
-    StudentResourceLogSerializer
+    StudentResourceLogSerializer, FullStudentDataSerializer
 )
 
 # Schema for token responses
@@ -207,10 +207,9 @@ class StudentSubjectListCreateView(generics.ListCreateAPIView):
     )
     def perform_create(self, serializer):
         try:
-            serializer.save(student=self.request.user)
+            serializer.save()
         except Exception as e:
             raise serializers.ValidationError({"error": f"Creation failed: {str(e)}"})
-
 
 class StudentSubjectDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
@@ -290,9 +289,52 @@ class QuizListCreateView(generics.ListCreateAPIView):
     )
     def perform_create(self, serializer):
         try:
-            serializer.save(student=self.request.user)
+            serializer.save()
         except Exception as e:
             raise serializers.ValidationError({"error": f"Quiz creation failed: {str(e)}"})
+
+class AnswerQuizView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Submit answers for a quiz",
+        operation_description="Allows a student to submit answers for each question in a quiz. Does not evaluate yet.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["quiz_id", "answers"],
+            properties={
+                "quiz_id": openapi.Schema(type=openapi.TYPE_INTEGER),
+                "answers": openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    additional_properties=openapi.Schema(type=openapi.TYPE_STRING)
+                )
+            }
+        ),
+        tags=["Quiz"]
+    )
+    def post(self, request):
+        try:
+            user = request.user
+            quiz_id = request.data["quiz_id"]
+            answers = request.data["answers"]  # {question_id: student_answer}
+
+            quiz = Quiz.objects.get(id=quiz_id, student=user)
+
+            if quiz.status != "pending":
+                return Response({"error": "Quiz has already been submitted or completed."}, status=400)
+
+            for q in quiz.questions.all():
+                answer = answers.get(str(q.id))
+                if answer:
+                    q.student_answer = answer
+                    q.save()
+
+            return Response({"message": "Answers submitted successfully."})
+
+        except Quiz.DoesNotExist:
+            return Response({"error": "Quiz not found."}, status=404)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
 
 # ---------------------------
 # Learning Goal List & Create
@@ -409,3 +451,39 @@ class StudentResourceLogListCreateView(generics.ListCreateAPIView):
             serializer.save(student=self.request.user)
         except Exception as e:
             raise serializers.ValidationError({"error": f"Log creation failed: {str(e)}"})
+        
+# ---------------------------
+# List All Student Data
+# ---------------------------
+class StudentProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Get full student profile",
+        operation_description="Returns all information about the authenticated student in a single JSON response.",
+        responses={200: FullStudentDataSerializer},
+        tags=["Student"]
+    )
+    def get(self, request):
+        user = request.user
+        try:
+            info = StudentInfo.objects.get(student=user)
+            subjects = StudentSubject.objects.filter(student=user)
+            goals = LearningGoal.objects.filter(student=user)
+            resource_logs = StudentResourceLog.objects.filter(student=user)
+
+            serializer = FullStudentDataSerializer(
+                user,
+                context={
+                    "request": request,
+                    "student": user,
+                    "info": info,
+                    "subjects": subjects,
+                    "goals": goals,
+                    "resource_logs": resource_logs,
+                }
+            )
+
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)

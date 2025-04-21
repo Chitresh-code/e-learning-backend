@@ -33,6 +33,8 @@ INSTALLED_APPS = [
 
     # Custom apps
     "student",
+    "ai",
+    "learningplan",
 ]
 
 # Middleware

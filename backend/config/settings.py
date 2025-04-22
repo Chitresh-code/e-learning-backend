@@ -1,6 +1,7 @@
 from pathlib import Path
 from decouple import config, Csv
 from datetime import timedelta
+from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -36,6 +37,16 @@ INSTALLED_APPS = [
     "ai",
     "learningplan",
 ]
+
+# CORS headers
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000.com",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = list(default_headers)
 
 # Middleware
 MIDDLEWARE = [

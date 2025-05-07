@@ -8,11 +8,14 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     """
     Optional: override this if you want to customize user creation
     """
-
     def save_user(self, request, sociallogin, form=None):
         user = super().save_user(request, sociallogin, form)
-        return user
 
+        # Check if email is missing
+        if not user.email:
+            raise ValueError("Email not provided by social account")
+
+        return user
 
 class JWTEnabledSocialLoginView(SocialLoginView):
     """

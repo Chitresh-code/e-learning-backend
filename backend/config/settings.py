@@ -41,7 +41,7 @@ INSTALLED_APPS = [
 # CORS headers
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://127.0.0.1:3000.com",
+    "http://127.0.0.1:3000",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -105,7 +105,7 @@ REST_FRAMEWORK = {
 
 # JWT token config (60m access, 1d refresh)
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
@@ -136,8 +136,29 @@ ACCOUNT_SIGNUP_FIELDS = {
 ACCOUNT_EMAIL_VERIFICATION = "none"
 
 SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_AUTO_SIGNOUT = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
 REST_USE_JWT = True
 DJ_REST_AUTH_TOKEN_MODEL = None
+LOGIN_REDIRECT_URL = "http://localhost:3000/dashboard"
+LOGOUT_REDIRECT_URL = "http://localhost:3000/"
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': config('SOCIAL_AUTH_GOOGLE_CLIENT_ID'),
+            'secret': config('SOCIAL_AUTH_GOOGLE_SECRET'),
+            'key': ''
+        },
+        'SCOPE': [
+            'profile',
+            'email',  # ← ADD THIS
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

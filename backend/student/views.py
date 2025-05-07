@@ -467,10 +467,13 @@ class StudentProfileView(APIView):
     def get(self, request):
         user = request.user
         try:
-            info = StudentInfo.objects.get(student=user)
+            info = StudentInfo.objects.filter(student=user).first()
             subjects = StudentSubject.objects.filter(student=user)
             goals = LearningGoal.objects.filter(student=user)
             resource_logs = StudentResourceLog.objects.filter(student=user)
+
+            if not info and not subjects.exists() and not goals.exists() and not resource_logs.exists():
+                return Response({"message": "No data found for this student."}, status=200)
 
             serializer = FullStudentDataSerializer(
                 user,
